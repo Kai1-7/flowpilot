@@ -1,0 +1,33 @@
+{
+  "name": "@flowpilot/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "cross-env DATABASE_URL=file:../../../data/flowpilot.db tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "cross-env DATABASE_URL=file:../../../data/flowpilot.db node dist/server.js",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "test": "cross-env VITEST_POOL_ID=1 vitest run",
+    "db:migrate": "cross-env DATABASE_URL=file:../../../data/flowpilot.db tsx src/scripts/migrate.ts",
+    "db:generate": "prisma generate --schema prisma/schema.prisma",
+    "db:push": "cross-env DATABASE_URL=file:../../../data/flowpilot.db tsx src/scripts/migrate.ts",
+    "seed": "cross-env DATABASE_URL=file:../../../data/flowpilot.db tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@flowpilot/shared": "workspace:*",
+    "@prisma/client": "^6.16.2",
+    "csv-parse": "^5.6.0",
+    "fastify": "^5.4.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "prisma": "^6.16.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

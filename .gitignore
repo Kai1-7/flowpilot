@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+!data/sandbox/**/*.log
+coverage/
+.vite/
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+data/artifacts/*
+!data/artifacts/.gitkeep
+apps/api/prisma/dev.db
+apps/api/prisma/test.db
