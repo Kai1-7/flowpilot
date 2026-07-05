@@ -1,0 +1,5 @@
+customer_id,name,plan,region,mrr,last_seen,risk_score
+1001,Aurora Labs,Scale,North America,2400,2026-07-01,0.14
+1002,Beacon Legal,Team,Latin America,880,2026-06-26,0.31
+1003,Cypress Studio,Starter,Europe,120,2026-06-12,0.62
+1004,Delta Ops,Scale,North America,3100,2026-07-03,0.08

@@ -1,0 +1,2 @@
+Review automation run logs
+Prepare GitHub screenshots
