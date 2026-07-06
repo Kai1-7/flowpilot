@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Shell } from "./components/Shell";
 import { ArtifactPage } from "./pages/ArtifactPage";
+import { AutomationBuilderPage } from "./pages/AutomationBuilderPage";
 import { AutomationDetailPage } from "./pages/AutomationDetailPage";
 import { AutomationsPage } from "./pages/AutomationsPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -13,6 +14,7 @@ export default function App() {
       <Route element={<Shell />}>
         <Route index element={<DashboardPage />} />
         <Route path="automations" element={<AutomationsPage />} />
+        <Route path="automations/new" element={<AutomationBuilderPage />} />
         <Route path="automations/:id" element={<AutomationDetailPage />} />
         <Route path="templates" element={<TemplatesPage />} />
         <Route path="runs" element={<RunsPage />} />

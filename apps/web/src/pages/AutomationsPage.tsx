@@ -92,10 +92,10 @@ export function AutomationsPage() {
           <p className="mt-1 text-sm text-zinc-600">Enabled workflows, latest run state, and execution controls.</p>
         </div>
         <Link
-          to="/templates"
+          to="/automations/new"
           className="inline-flex items-center justify-center rounded-lg bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800"
         >
-          New from template
+          New automation
         </Link>
       </div>
 

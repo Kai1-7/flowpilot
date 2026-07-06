@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, Box, FileWarning, Play } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { BadgeCheck, Box, FileWarning, Settings } from "lucide-react";
 import type { TemplateDefinition } from "@flowpilot/shared";
+import { Link } from "react-router-dom";
 import { api } from "../lib/api";
 
 const riskIcon = {
@@ -10,27 +11,7 @@ const riskIcon = {
 };
 
 function TemplateCard({ template }: { template: TemplateDefinition }) {
-  const queryClient = useQueryClient();
   const Icon = riskIcon[template.riskLevel];
-  const mutation = useMutation({
-    mutationFn: () =>
-      api.createAutomation({
-        name: `${template.name} Starter`,
-        description: template.summary,
-        templateKey: template.key,
-        triggerType: template.defaultTriggerType,
-        schedule: template.defaultTriggerType === "scheduled" ? { intervalSeconds: 300 } : null,
-        config: template.defaultConfig,
-        retryLimit: template.riskLevel === "sandbox-write" ? 0 : 1
-      }),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["templates"] }),
-        queryClient.invalidateQueries({ queryKey: ["automations"] }),
-        queryClient.invalidateQueries({ queryKey: ["dashboard"] })
-      ]);
-    }
-  });
 
   return (
     <article className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
@@ -48,15 +29,13 @@ function TemplateCard({ template }: { template: TemplateDefinition }) {
         <span className="rounded-full bg-cyan-50 px-2.5 py-1 font-semibold text-cyan-700">{template.defaultTriggerType}</span>
         <span className="rounded-full bg-zinc-100 px-2.5 py-1 font-semibold text-zinc-600">{template.riskLevel}</span>
       </div>
-      <button
-        type="button"
-        onClick={() => mutation.mutate()}
-        disabled={mutation.isPending}
+      <Link
+        to={`/automations/new?template=${template.key}`}
         className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
       >
-        <Play size={16} />
-        {mutation.isPending ? "Creating..." : "Create automation"}
-      </button>
+        <Settings size={16} />
+        Configure automation
+      </Link>
     </article>
   );
 }

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Activity, CheckCircle2, FileText, Play, ShieldCheck, Workflow, XCircle } from "lucide-react";
 import type { TemplateDefinition } from "@flowpilot/shared";
 import { Link } from "react-router-dom";
@@ -25,30 +25,9 @@ function RunSparkline({ success, failed }: { success: number; failed: number }) 
 }
 
 function TemplateStarter({ template }: { template: TemplateDefinition }) {
-  const queryClient = useQueryClient();
-  const mutation = useMutation({
-    mutationFn: () =>
-      api.createAutomation({
-        name: `${template.name} Copy`,
-        description: template.summary,
-        templateKey: template.key,
-        triggerType: template.defaultTriggerType,
-        schedule: template.defaultTriggerType === "scheduled" ? { intervalSeconds: 300 } : null,
-        config: template.defaultConfig,
-        retryLimit: template.key === "sandbox-file-organizer" ? 0 : 1
-      }),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
-        queryClient.invalidateQueries({ queryKey: ["automations"] })
-      ]);
-    }
-  });
-
   return (
-    <button
-      type="button"
-      onClick={() => mutation.mutate()}
+    <Link
+      to={`/automations/new?template=${template.key}`}
       className="flex min-h-24 w-full flex-col justify-between rounded-lg border border-zinc-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-panel"
     >
       <div>
@@ -57,9 +36,9 @@ function TemplateStarter({ template }: { template: TemplateDefinition }) {
       </div>
       <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-cyan-700">
         <Play size={14} />
-        {mutation.isPending ? "Creating..." : "Create starter"}
+        Configure starter
       </div>
-    </button>
+    </Link>
   );
 }
 
