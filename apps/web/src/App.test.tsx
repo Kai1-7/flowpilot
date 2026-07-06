@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { templateDefinitions } from "@flowpilot/shared";
 import App from "./App";
 
 function renderApp(route = "/") {
@@ -55,6 +56,28 @@ describe("FlowPilot UI", () => {
           );
         }
 
+        if (url.endsWith("/api/templates")) {
+          return new Response(JSON.stringify({ templates: templateDefinitions }), {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          });
+        }
+
+        if (url.includes("/api/templates/") && url.endsWith("/validate")) {
+          return new Response(
+            JSON.stringify({
+              ok: true,
+              templateKey: "csv-report",
+              config: {
+                csvPath: "sample-customers.csv",
+                reportName: "customer-csv-profile",
+                delimiter: ","
+              }
+            }),
+            { status: 200, headers: { "content-type": "application/json" } }
+          );
+        }
+
         if (url.endsWith("/api/automations")) {
           return new Response(JSON.stringify({ automations: [] }), {
             status: 200,
@@ -82,6 +105,15 @@ describe("FlowPilot UI", () => {
     renderApp("/automations");
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "Automations" })).toBeInTheDocument());
-    expect(screen.getByText("New from template")).toBeInTheDocument();
+    expect(screen.getByText("New automation")).toBeInTheDocument();
+  });
+
+  it("renders the guided automation builder", async () => {
+    renderApp("/automations/new?template=csv-report");
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "New automation" })).toBeInTheDocument());
+    expect(screen.getByDisplayValue("Customer CSV Insight")).toBeInTheDocument();
+    expect(screen.getByText("Template configuration")).toBeInTheDocument();
+    expect(await screen.findByText("Config validated")).toBeInTheDocument();
   });
 });
