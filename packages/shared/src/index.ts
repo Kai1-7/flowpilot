@@ -101,6 +101,33 @@ export const TemplateDefinitionSchema = z
 
 export type TemplateDefinition = z.infer<typeof TemplateDefinitionSchema>;
 
+export const builderFieldTypes = ["text", "url", "number", "boolean", "select", "rules"] as const;
+export type BuilderFieldType = (typeof builderFieldTypes)[number];
+
+export type BuilderFieldOption = {
+  label: string;
+  value: string;
+};
+
+export type BuilderFieldDefinition = {
+  name: string;
+  label: string;
+  help: string;
+  type: BuilderFieldType;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: BuilderFieldOption[];
+};
+
+export type TemplateBuilderDefinition = {
+  templateKey: TemplateKey;
+  recommendedName: string;
+  configFields: BuilderFieldDefinition[];
+  successHint: string;
+};
+
 export const templateDefinitions: TemplateDefinition[] = [
   {
     key: "api-health-check",
@@ -164,6 +191,135 @@ export const templateDefinitions: TemplateDefinition[] = [
     riskLevel: "webhook"
   }
 ];
+
+export const templateBuilderDefinitions = {
+  "api-health-check": {
+    templateKey: "api-health-check",
+    recommendedName: "Local API Pulse",
+    successHint: "Use this when you need a scheduled monitor with latency and status evidence.",
+    configFields: [
+      {
+        name: "url",
+        label: "URL",
+        help: "Endpoint to check. It must include http:// or https://.",
+        type: "url",
+        placeholder: "http://localhost:4357/api/health"
+      },
+      {
+        name: "method",
+        label: "Method",
+        help: "GET reads the endpoint body; HEAD only checks headers.",
+        type: "select",
+        options: [
+          { label: "GET", value: "GET" },
+          { label: "HEAD", value: "HEAD" }
+        ]
+      },
+      {
+        name: "expectedStatus",
+        label: "Expected status",
+        help: "The HTTP status code that marks the run successful.",
+        type: "number",
+        min: 100,
+        max: 599,
+        step: 1
+      },
+      {
+        name: "timeoutMs",
+        label: "Timeout",
+        help: "Maximum wait time in milliseconds before failing the check.",
+        type: "number",
+        min: 500,
+        max: 30_000,
+        step: 500
+      }
+    ]
+  },
+  "sandbox-file-organizer": {
+    templateKey: "sandbox-file-organizer",
+    recommendedName: "Inbox Organizer Preview",
+    successHint: "Use dry-run first so file changes stay reviewable before enabling writes.",
+    configFields: [
+      {
+        name: "sourceDir",
+        label: "Source folder",
+        help: "Folder inside data/sandbox to scan.",
+        type: "text",
+        placeholder: "inbox"
+      },
+      {
+        name: "dryRun",
+        label: "Dry run",
+        help: "When enabled, FlowPilot writes a plan without moving files.",
+        type: "boolean"
+      },
+      {
+        name: "rules",
+        label: "Rules",
+        help: "Extension groups mapped to target folders inside the sandbox.",
+        type: "rules"
+      }
+    ]
+  },
+  "csv-report": {
+    templateKey: "csv-report",
+    recommendedName: "Customer CSV Insight",
+    successHint: "Use this to create a lightweight data-quality artifact from a local CSV.",
+    configFields: [
+      {
+        name: "csvPath",
+        label: "CSV path",
+        help: "CSV file inside data/sandbox.",
+        type: "text",
+        placeholder: "sample-customers.csv"
+      },
+      {
+        name: "reportName",
+        label: "Report name",
+        help: "Used for the Markdown artifact title and filename.",
+        type: "text",
+        placeholder: "customer-csv-profile"
+      },
+      {
+        name: "delimiter",
+        label: "Delimiter",
+        help: "Single character delimiter used by the CSV parser.",
+        type: "text",
+        placeholder: ","
+      }
+    ]
+  },
+  "webhook-event-digest": {
+    templateKey: "webhook-event-digest",
+    recommendedName: "Inbound Lead Digest",
+    successHint: "Use this to turn incoming JSON payloads into searchable Markdown evidence.",
+    configFields: [
+      {
+        name: "label",
+        label: "Label",
+        help: "Readable label used as the artifact title.",
+        type: "text",
+        placeholder: "Inbound lead"
+      },
+      {
+        name: "includeRawPayload",
+        label: "Include raw payload",
+        help: "Store the raw JSON payload in the generated artifact.",
+        type: "boolean"
+      }
+    ]
+  }
+} satisfies Record<TemplateKey, TemplateBuilderDefinition>;
+
+export function getTemplateDefinition(templateKey: TemplateKey): TemplateDefinition {
+  const definition = templateDefinitions.find((template) => template.key === templateKey);
+  if (!definition) throw new Error(`Unknown template: ${templateKey}`);
+  return definition;
+}
+
+export function getTemplateBuilderDefinition(templateKey: TemplateKey): TemplateBuilderDefinition {
+  return templateBuilderDefinitions[templateKey];
+}
 
 export const AutomationCreateSchema = z
   .object({
