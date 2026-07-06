@@ -11,9 +11,10 @@ FlowPilot is planned as a one-week portfolio project. Each day should leave the 
 
 ## Day 2: Workflow Builder
 
-- Add a guided automation creation form.
-- Add config editors per template.
-- Add validation feedback before saving.
+- Add a guided automation creation form. Done.
+- Add config editors per template. Done.
+- Add validation feedback before saving. Done.
+- Route dashboard and template CTAs into the builder. Done.
 
 ## Day 3: Observability
 

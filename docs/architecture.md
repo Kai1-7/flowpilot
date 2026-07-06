@@ -9,14 +9,16 @@ FlowPilot is a pnpm monorepo with three main packages:
 - `packages/shared`: Zod schemas, template definitions, and shared TypeScript types.
 
 The shared package is the contract between UI and API. Template defaults, trigger types, run statuses, and config validators live there so workflow creation and execution stay aligned.
+The automation builder also reads shared template field metadata, so the UI renders fields from the same package that defines backend validation.
 
 ## Data Flow
 
 1. A user creates an automation from a template.
-2. The API validates the template config with Zod and persists it in SQLite.
-3. A trigger starts a run: manual button, scheduler tick, or webhook request.
-4. The runner creates a `Run`, writes structured `RunLog` records, executes the matching template, retries when configured, and stores artifacts.
-5. The UI reads runs, logs, and artifacts through API endpoints.
+2. The UI renders template-specific fields and asks the API to validate the config.
+3. The API validates the template config with Zod and persists it in SQLite.
+4. A trigger starts a run: manual button, scheduler tick, or webhook request.
+5. The runner creates a `Run`, writes structured `RunLog` records, executes the matching template, retries when configured, and stores artifacts.
+6. The UI reads runs, logs, and artifacts through API endpoints.
 
 ```mermaid
 flowchart LR
@@ -51,5 +53,5 @@ The scheduler is intentionally simple: an in-process interval scans enabled sche
 ## Testing Strategy
 
 - Unit tests cover retry behavior and sandbox path protection.
-- API tests create automations, run templates, verify logs, and exercise webhooks.
-- Frontend smoke tests render the main dashboard and automations page with mocked API responses.
+- API tests create automations, validate template configs, run templates, verify logs, and exercise webhooks.
+- Frontend smoke tests render the main dashboard, automations page, and guided builder with mocked API responses.

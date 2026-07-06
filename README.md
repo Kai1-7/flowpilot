@@ -12,6 +12,7 @@ Automation projects often hide the hard parts: validation, logs, retries, execut
 
 - Dashboard with automation health, recent runs, success rate, and artifacts.
 - Template-based workflows with shared Zod validation.
+- Guided automation builder with template-specific config fields and backend validation.
 - Manual, scheduled, and webhook triggers.
 - Run logs, retry handling, persisted outputs, and Markdown artifacts.
 - SQLite database via Prisma.
@@ -64,9 +65,10 @@ pnpm capture:screenshots
 1. Run `pnpm seed`.
 2. Open the dashboard.
 3. Go to Automations.
-4. Run `Customer CSV Insight`.
-5. Open Artifacts and review the generated Markdown report.
-6. Send a webhook:
+4. Click `New automation` and configure a workflow from a template.
+5. Run `Customer CSV Insight`.
+6. Open Artifacts and review the generated Markdown report.
+7. Send a webhook:
 
 ```bash
 curl -X POST http://localhost:4357/api/webhooks/lead-intake \
@@ -94,7 +96,7 @@ FlowPilot v1 intentionally avoids arbitrary code execution. File automation uses
 
 ## Roadmap
 
-- Visual workflow builder with guarded action blocks.
+- Template config editor refinements and guarded action blocks.
 - More local integrations: folder watchers, cron expressions, email digest export.
 - Import/export automation bundles.
 - Role-based review mode for production workflows.
