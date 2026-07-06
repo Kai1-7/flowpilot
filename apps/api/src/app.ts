@@ -12,6 +12,7 @@ import {
   validateTemplateConfig
 } from "@flowpilot/shared";
 import type { Prisma } from "@prisma/client";
+import { ZodError } from "zod";
 import { appInfo } from "./config.js";
 import { prisma } from "./db.js";
 import { errorMessage, HttpError } from "./lib/errors.js";
@@ -62,6 +63,13 @@ export async function buildApp(options: BuildAppOptions = {}) {
       });
     }
 
+    if (error instanceof ZodError) {
+      return reply.status(400).send({
+        error: "Validation failed",
+        details: error.issues
+      });
+    }
+
     app.log.error(error);
     return reply.status(500).send({
       error: errorMessage(error)
@@ -106,6 +114,18 @@ export async function buildApp(options: BuildAppOptions = {}) {
   app.get("/api/templates", async () => ({
     templates: templateDefinitions
   }));
+
+  app.post<{ Params: { key: string } }>("/api/templates/:key/validate", async (request) => {
+    const templateKey = TemplateKeySchema.parse(request.params.key);
+    const body = request.body as { config?: unknown };
+    const config = validateTemplateConfig(templateKey, body.config ?? {});
+
+    return {
+      ok: true,
+      templateKey,
+      config
+    };
+  });
 
   app.get("/api/automations", async () => {
     const automations = await prisma.automation.findMany({
