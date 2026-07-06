@@ -16,5 +16,8 @@ await page.screenshot({ path: path.join(outputDir, "dashboard.png"), fullPage: t
 await page.goto(`${webUrl}/automations`, { waitUntil: "networkidle" });
 await page.screenshot({ path: path.join(outputDir, "automations.png"), fullPage: true });
 
+await page.goto(`${webUrl}/automations/new?template=csv-report`, { waitUntil: "networkidle" });
+await page.screenshot({ path: path.join(outputDir, "builder.png"), fullPage: true });
+
 await browser.close();
 console.log(`Screenshots written to ${outputDir}`);
