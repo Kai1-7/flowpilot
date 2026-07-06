@@ -71,6 +71,12 @@ export type DashboardResponse = {
   recentRuns: Run[];
 };
 
+export type TemplateValidationResponse = {
+  ok: true;
+  templateKey: TemplateKey;
+  config: Record<string, unknown>;
+};
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     headers: {
@@ -92,6 +98,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   dashboard: () => request<DashboardResponse>("/api/dashboard"),
   templates: () => request<{ templates: TemplateDefinition[] }>("/api/templates"),
+  validateTemplate: (templateKey: TemplateKey, config: Record<string, unknown>) =>
+    request<TemplateValidationResponse>(`/api/templates/${templateKey}/validate`, {
+      method: "POST",
+      body: JSON.stringify({ config })
+    }),
   automations: () => request<{ automations: Automation[] }>("/api/automations"),
   automation: (id: string) => request<{ automation: Automation }>(`/api/automations/${id}`),
   createAutomation: (body: {
