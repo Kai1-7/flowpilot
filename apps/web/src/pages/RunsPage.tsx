@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { runStatuses, triggerTypes, type RunFilterInput } from "@flowpilot/shared";
 import { Link, useParams } from "react-router-dom";
+import { FilterSelect, FilterToolbar } from "../components/FilterToolbar";
 import { JsonBlock } from "../components/JsonBlock";
 import { StatusPill } from "../components/StatusPill";
 import { api } from "../lib/api";
@@ -7,9 +10,10 @@ import { formatDate, formatDuration } from "../lib/format";
 
 export function RunsPage() {
   const { id } = useParams();
+  const [filters, setFilters] = useState<RunFilterInput>({});
   const runsQuery = useQuery({
-    queryKey: ["runs"],
-    queryFn: api.runs
+    queryKey: ["runs", filters],
+    queryFn: () => api.runs(filters)
   });
   const runQuery = useQuery({
     queryKey: ["run", id],
@@ -26,6 +30,37 @@ export function RunsPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-950">Runs</h1>
           <p className="mt-1 text-sm text-zinc-600">Execution history with status, duration, and trigger source.</p>
+        </div>
+        <FilterToolbar
+          search={filters.q ?? ""}
+          onSearchChange={(q) => setFilters((current) => ({ ...current, q: q || undefined }))}
+          onClear={() => setFilters({})}
+        >
+          <FilterSelect
+            label="Status"
+            value={filters.status ?? ""}
+            onChange={(status) =>
+              setFilters((current) => ({ ...current, status: (status || undefined) as RunFilterInput["status"] }))
+            }
+            options={[
+              { label: "All", value: "" },
+              ...runStatuses.map((status) => ({ label: status, value: status }))
+            ]}
+          />
+          <FilterSelect
+            label="Trigger"
+            value={filters.trigger ?? ""}
+            onChange={(trigger) =>
+              setFilters((current) => ({ ...current, trigger: (trigger || undefined) as RunFilterInput["trigger"] }))
+            }
+            options={[
+              { label: "All", value: "" },
+              ...triggerTypes.map((trigger) => ({ label: trigger, value: trigger }))
+            ]}
+          />
+        </FilterToolbar>
+        <div className="text-sm text-zinc-600">
+          Showing <span className="font-semibold text-zinc-950">{runsQuery.data?.runs.length ?? 0}</span> runs
         </div>
         <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
           <div className="overflow-x-auto">
