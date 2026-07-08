@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import {
   AutomationCreateSchema,
   AutomationPatchSchema,
+  ArtifactFilterSchema,
   RunFilterSchema,
   TemplateKeySchema,
   TriggerTypeSchema,
@@ -325,8 +326,28 @@ export async function buildApp(options: BuildAppOptions = {}) {
     return { run: serializeRun(run) };
   });
 
-  app.get("/api/artifacts", async () => {
+  app.get<{ Querystring: Record<string, string | undefined> }>("/api/artifacts", async (request) => {
+    const filters = ArtifactFilterSchema.parse({
+      type: request.query.type || undefined,
+      automationId: request.query.automationId || undefined,
+      q: request.query.q || undefined
+    });
+    const where: Prisma.ArtifactWhereInput = {
+      ...(filters.type ? { type: filters.type } : {}),
+      ...(filters.automationId ? { automationId: filters.automationId } : {}),
+      ...(filters.q
+        ? {
+            OR: [
+              { title: { contains: filters.q } },
+              { path: { contains: filters.q } },
+              { content: { contains: filters.q } },
+              { automation: { name: { contains: filters.q } } }
+            ]
+          }
+        : {})
+    };
     const artifacts = await prisma.artifact.findMany({
+      where,
       take: 50,
       orderBy: { createdAt: "desc" },
       include: {
@@ -335,7 +356,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       }
     });
 
-    return { artifacts: artifacts.map((artifact) => serializeArtifact(artifact)) };
+    return { artifacts: artifacts.map((artifact) => serializeArtifact(artifact)), filters };
   });
 
   app.post<{ Params: { slug: string } }>("/api/webhooks/:slug", async (request) => {
