@@ -17,6 +17,7 @@ import { appInfo } from "./config.js";
 import { prisma } from "./db.js";
 import { errorMessage, HttpError } from "./lib/errors.js";
 import { serializeArtifact, serializeAutomation, serializeRun } from "./services/serializers.js";
+import { getDashboardHealthSummary } from "./services/observability.js";
 import { runAutomation } from "./services/runner.js";
 import { startScheduler } from "./services/scheduler.js";
 
@@ -84,8 +85,17 @@ export async function buildApp(options: BuildAppOptions = {}) {
   }));
 
   app.get("/api/dashboard", async () => {
-    const [automationCount, enabledAutomationCount, runCount, successCount, failedCount, artifactCount, recentRuns] =
-      await prisma.$transaction([
+    const [
+      automationCount,
+      enabledAutomationCount,
+      runCount,
+      successCount,
+      failedCount,
+      artifactCount,
+      recentRuns,
+      health
+    ] =
+      await Promise.all([
         prisma.automation.count(),
         prisma.automation.count({ where: { enabled: true } }),
         prisma.run.count(),
@@ -96,7 +106,8 @@ export async function buildApp(options: BuildAppOptions = {}) {
           take: 6,
           orderBy: { startedAt: "desc" },
           include: { automation: true, artifacts: true }
-        })
+        }),
+        getDashboardHealthSummary()
       ]);
 
     return {
@@ -106,6 +117,7 @@ export async function buildApp(options: BuildAppOptions = {}) {
       successCount,
       failedCount,
       artifactCount,
+      health,
       templates: templateDefinitions,
       recentRuns: recentRuns.map((run) => serializeRun(run))
     };
