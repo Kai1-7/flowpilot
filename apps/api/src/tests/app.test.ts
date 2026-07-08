@@ -81,6 +81,35 @@ describe("FlowPilot API", () => {
 
     expect(artifactsResponse.statusCode).toBe(200);
     expect(artifactsResponse.json().artifacts[0].title).toContain("CSV report");
+
+    const dashboardResponse = await app.inject({
+      method: "GET",
+      url: "/api/dashboard"
+    });
+
+    expect(dashboardResponse.statusCode).toBe(200);
+    expect(dashboardResponse.json().health).toMatchObject({
+      successRate: 100,
+      lastRunAt: expect.any(String)
+    });
+
+    const filteredRunsResponse = await app.inject({
+      method: "GET",
+      url: "/api/runs?status=success&q=CSV"
+    });
+
+    expect(filteredRunsResponse.statusCode).toBe(200);
+    expect(filteredRunsResponse.json().runs).toHaveLength(1);
+    expect(filteredRunsResponse.json().filters.status).toBe("success");
+
+    const filteredArtifactsResponse = await app.inject({
+      method: "GET",
+      url: "/api/artifacts?q=customer"
+    });
+
+    expect(filteredArtifactsResponse.statusCode).toBe(200);
+    expect(filteredArtifactsResponse.json().artifacts).toHaveLength(1);
+    expect(filteredArtifactsResponse.json().filters.q).toBe("customer");
   });
 
   it("toggles an automation and exposes run logs", async () => {
