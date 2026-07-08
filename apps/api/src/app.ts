@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import {
   AutomationCreateSchema,
   AutomationPatchSchema,
+  RunFilterSchema,
   TemplateKeySchema,
   TriggerTypeSchema,
   parseSchedule,
@@ -276,14 +277,37 @@ export async function buildApp(options: BuildAppOptions = {}) {
     };
   });
 
-  app.get("/api/runs", async () => {
+  app.get<{ Querystring: Record<string, string | undefined> }>("/api/runs", async (request) => {
+    const filters = RunFilterSchema.parse({
+      status: request.query.status || undefined,
+      trigger: request.query.trigger || undefined,
+      automationId: request.query.automationId || undefined,
+      q: request.query.q || undefined
+    });
+    const where: Prisma.RunWhereInput = {
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.trigger ? { trigger: filters.trigger } : {}),
+      ...(filters.automationId ? { automationId: filters.automationId } : {}),
+      ...(filters.q
+        ? {
+            OR: [
+              { status: { contains: filters.q } },
+              { trigger: { contains: filters.q } },
+              { error: { contains: filters.q } },
+              { automation: { name: { contains: filters.q } } },
+              { automation: { templateKey: { contains: filters.q } } }
+            ]
+          }
+        : {})
+    };
     const runs = await prisma.run.findMany({
+      where,
       take: 50,
       orderBy: { startedAt: "desc" },
       include: { automation: true, artifacts: true }
     });
 
-    return { runs: runs.map((run) => serializeRun(run)) };
+    return { runs: runs.map((run) => serializeRun(run)), filters };
   });
 
   app.get<{ Params: { id: string } }>("/api/runs/:id", async (request) => {
