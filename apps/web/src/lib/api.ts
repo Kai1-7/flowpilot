@@ -1,4 +1,12 @@
-import type { ScheduleConfig, TemplateDefinition, TemplateKey, TriggerType } from "@flowpilot/shared";
+import type {
+  ArtifactFilterInput,
+  DashboardHealthSummary,
+  RunFilterInput,
+  ScheduleConfig,
+  TemplateDefinition,
+  TemplateKey,
+  TriggerType
+} from "@flowpilot/shared";
 
 export type Automation = {
   id: string;
@@ -67,6 +75,7 @@ export type DashboardResponse = {
   successCount: number;
   failedCount: number;
   artifactCount: number;
+  health: DashboardHealthSummary;
   templates: TemplateDefinition[];
   recentRuns: Run[];
 };
@@ -93,6 +102,18 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
+}
+
+function withQuery(path: string, params: Record<string, string | number | null | undefined>): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      query.set(key, String(value));
+    }
+  }
+
+  const queryString = query.toString();
+  return queryString ? `${path}?${queryString}` : path;
 }
 
 export const api = {
@@ -129,7 +150,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({})
     }),
-  runs: () => request<{ runs: Run[] }>("/api/runs"),
+  runs: (filters: RunFilterInput = {}) => request<{ runs: Run[]; filters: RunFilterInput }>(withQuery("/api/runs", filters)),
   run: (id: string) => request<{ run: Run }>(`/api/runs/${id}`),
-  artifacts: () => request<{ artifacts: Artifact[] }>("/api/artifacts")
+  artifacts: (filters: ArtifactFilterInput = {}) =>
+    request<{ artifacts: Artifact[]; filters: ArtifactFilterInput }>(withQuery("/api/artifacts", filters))
 };
