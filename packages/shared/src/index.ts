@@ -348,6 +348,44 @@ export const AutomationPatchSchema = AutomationCreateSchema.partial().extend({
 export type AutomationCreateInput = z.infer<typeof AutomationCreateSchema>;
 export type AutomationPatchInput = z.infer<typeof AutomationPatchSchema>;
 
+export const RunFilterSchema = z
+  .object({
+    status: RunStatusSchema.optional(),
+    trigger: TriggerTypeSchema.optional(),
+    automationId: z.string().min(1).optional(),
+    q: z.string().trim().min(1).max(100).optional()
+  })
+  .strict();
+
+export const ArtifactFilterSchema = z
+  .object({
+    type: z.string().trim().min(1).max(50).optional(),
+    automationId: z.string().min(1).optional(),
+    q: z.string().trim().min(1).max(100).optional()
+  })
+  .strict();
+
+export type RunFilterInput = z.infer<typeof RunFilterSchema>;
+export type ArtifactFilterInput = z.infer<typeof ArtifactFilterSchema>;
+
+export type StatusCount = {
+  status: RunStatus;
+  count: number;
+};
+
+export type TriggerCount = {
+  trigger: TriggerType;
+  count: number;
+};
+
+export type DashboardHealthSummary = {
+  successRate: number;
+  averageDurationMs: number | null;
+  lastRunAt: string | null;
+  statusCounts: StatusCount[];
+  triggerCounts: TriggerCount[];
+};
+
 export function validateTemplateConfig(templateKey: TemplateKey, config: unknown): AnyTemplateConfig {
   return templateConfigSchemas[templateKey].parse(config) as AnyTemplateConfig;
 }
