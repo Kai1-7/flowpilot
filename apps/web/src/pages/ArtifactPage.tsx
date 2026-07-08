@@ -1,13 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { FileText } from "lucide-react";
+import type { ArtifactFilterInput } from "@flowpilot/shared";
+import { FilterSelect, FilterToolbar } from "../components/FilterToolbar";
 import { api } from "../lib/api";
 import { formatDate } from "../lib/format";
 
 export function ArtifactPage() {
+  const [filters, setFilters] = useState<ArtifactFilterInput>({});
   const { data, isLoading, error } = useQuery({
-    queryKey: ["artifacts"],
-    queryFn: api.artifacts
+    queryKey: ["artifacts", filters],
+    queryFn: () => api.artifacts(filters)
   });
+  const typeOptions = useMemo(() => {
+    const types = Array.from(new Set((data?.artifacts ?? []).map((artifact) => artifact.type))).sort();
+    return [{ label: "All", value: "" }, ...types.map((type) => ({ label: type, value: type }))];
+  }, [data?.artifacts]);
 
   if (isLoading) return <div className="rounded-lg bg-white p-6 shadow-sm">Loading artifacts...</div>;
   if (error) return <div className="rounded-lg bg-rose-50 p-6 text-rose-700">{(error as Error).message}</div>;
@@ -17,6 +25,21 @@ export function ArtifactPage() {
       <div>
         <h1 className="text-2xl font-bold text-zinc-950">Artifacts</h1>
         <p className="mt-1 text-sm text-zinc-600">Markdown outputs produced by automation runs.</p>
+      </div>
+      <FilterToolbar
+        search={filters.q ?? ""}
+        onSearchChange={(q) => setFilters((current) => ({ ...current, q: q || undefined }))}
+        onClear={() => setFilters({})}
+      >
+        <FilterSelect
+          label="Type"
+          value={filters.type ?? ""}
+          onChange={(type) => setFilters((current) => ({ ...current, type: type || undefined }))}
+          options={typeOptions}
+        />
+      </FilterToolbar>
+      <div className="text-sm text-zinc-600">
+        Showing <span className="font-semibold text-zinc-950">{data?.artifacts.length ?? 0}</span> artifacts
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
         {data?.artifacts.map((artifact) => (
