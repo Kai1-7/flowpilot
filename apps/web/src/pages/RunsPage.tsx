@@ -4,6 +4,7 @@ import { runStatuses, triggerTypes, type RunFilterInput } from "@flowpilot/share
 import { Link, useParams } from "react-router-dom";
 import { FilterSelect, FilterToolbar } from "../components/FilterToolbar";
 import { JsonBlock } from "../components/JsonBlock";
+import { RunTimeline } from "../components/RunTimeline";
 import { StatusPill } from "../components/StatusPill";
 import { api } from "../lib/api";
 import { formatDate, formatDuration } from "../lib/format";
@@ -104,18 +105,27 @@ export function RunsPage() {
               <StatusPill status={runQuery.data.run.status} />
               <span className="text-xs text-zinc-500">{formatDuration(runQuery.data.run.durationMs)}</span>
             </div>
-            <JsonBlock value={runQuery.data.run.output ?? {}} />
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold text-zinc-950">Logs</h3>
-              {runQuery.data.run.logs?.map((log) => (
-                <div key={log.id} className="rounded-lg border border-zinc-200 p-3 text-sm">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-semibold text-zinc-950">{log.message}</span>
-                    <span className="text-xs uppercase text-zinc-500">{log.level}</span>
-                  </div>
-                  <div className="mt-1 text-xs text-zinc-500">{formatDate(log.createdAt)}</div>
-                </div>
-              ))}
+            <div className="grid gap-3 text-sm sm:grid-cols-3 xl:grid-cols-1">
+              <div className="rounded-lg bg-zinc-50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-normal text-zinc-500">Attempt</div>
+                <div className="mt-1 font-bold text-zinc-950">{runQuery.data.run.attempt}</div>
+              </div>
+              <div className="rounded-lg bg-zinc-50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-normal text-zinc-500">Logs</div>
+                <div className="mt-1 font-bold text-zinc-950">{runQuery.data.run.logs?.length ?? 0}</div>
+              </div>
+              <div className="rounded-lg bg-zinc-50 p-3">
+                <div className="text-xs font-semibold uppercase tracking-normal text-zinc-500">Artifacts</div>
+                <div className="mt-1 font-bold text-zinc-950">{runQuery.data.run.artifacts?.length ?? 0}</div>
+              </div>
+            </div>
+            <div>
+              <h3 className="mb-2 text-sm font-bold text-zinc-950">Output</h3>
+              <JsonBlock value={runQuery.data.run.output ?? {}} />
+            </div>
+            <div>
+              <h3 className="mb-2 text-sm font-bold text-zinc-950">Timeline</h3>
+              <RunTimeline run={runQuery.data.run} />
             </div>
           </div>
         ) : null}
