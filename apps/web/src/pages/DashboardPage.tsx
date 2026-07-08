@@ -7,6 +7,33 @@ import { StatusPill } from "../components/StatusPill";
 import { api } from "../lib/api";
 import { formatDate, formatDuration } from "../lib/format";
 
+function HealthSummary({
+  successRate,
+  averageDurationMs,
+  lastRunAt
+}: {
+  successRate: number;
+  averageDurationMs: number | null;
+  lastRunAt: string | null;
+}) {
+  return (
+    <section className="grid gap-4 md:grid-cols-3">
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">Success rate</p>
+        <p className="mt-2 text-2xl font-bold text-zinc-950">{successRate}%</p>
+      </div>
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">Avg duration</p>
+        <p className="mt-2 text-2xl font-bold text-zinc-950">{formatDuration(averageDurationMs)}</p>
+      </div>
+      <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-normal text-zinc-500">Last run</p>
+        <p className="mt-2 text-lg font-bold text-zinc-950">{formatDate(lastRunAt)}</p>
+      </div>
+    </section>
+  );
+}
+
 function RunSparkline({ success, failed }: { success: number; failed: number }) {
   const total = Math.max(1, success + failed);
   const successHeight = Math.max(14, Math.round((success / total) * 64));
@@ -75,6 +102,12 @@ export function DashboardPage() {
         <MetricCard label="Artifacts" value={data.artifactCount} icon={<FileText size={19} />} tone="bg-violet-100 text-violet-700" />
       </section>
 
+      <HealthSummary
+        successRate={data.health.successRate}
+        averageDurationMs={data.health.averageDurationMs}
+        lastRunAt={data.health.lastRunAt}
+      />
+
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
@@ -114,6 +147,27 @@ export function DashboardPage() {
 
         <div className="space-y-4">
           <RunSparkline success={data.successCount} failed={data.failedCount} />
+          <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+            <h2 className="text-sm font-bold text-zinc-950">Status mix</h2>
+            <div className="mt-3 space-y-2">
+              {data.health.statusCounts.map((item) => (
+                <div key={item.status} className="flex items-center justify-between text-sm">
+                  <StatusPill status={item.status} />
+                  <span className="font-semibold text-zinc-900">{item.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
+            <h2 className="text-sm font-bold text-zinc-950">Trigger mix</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {data.health.triggerCounts.map((item) => (
+                <span key={item.trigger} className="rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-700">
+                  {item.trigger}: {item.count}
+                </span>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <div className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm">
               <div className="flex items-center gap-2 text-sm font-bold text-emerald-700">
