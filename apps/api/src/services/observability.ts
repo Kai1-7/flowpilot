@@ -33,10 +33,12 @@ export async function getDashboardHealthSummary(): Promise<DashboardHealthSummar
     }),
     prisma.run.groupBy({
       by: ["status"],
+      orderBy: { status: "asc" },
       _count: { _all: true }
     }),
     prisma.run.groupBy({
       by: ["trigger"],
+      orderBy: { trigger: "asc" },
       _count: { _all: true }
     })
   ]);

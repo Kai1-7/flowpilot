@@ -187,8 +187,10 @@ describe("FlowPilot UI", () => {
     renderApp("/runs");
 
     await waitFor(() => expect(screen.getByRole("heading", { name: "Runs" })).toBeInTheDocument());
-    expect(screen.getByText("Showing")).toBeInTheDocument();
-    expect(screen.getByText("CSV Insight")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent?.replace(/\s+/g, " ").trim() === "Showing 1 runs")
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("CSV Insight").length).toBeGreaterThan(0);
   });
 
   it("renders artifact search results", async () => {

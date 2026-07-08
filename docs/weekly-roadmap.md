@@ -18,9 +18,10 @@ FlowPilot is planned as a one-week portfolio project. Each day should leave the 
 
 ## Day 3: Observability
 
-- Add run detail timelines.
-- Add filter/search for runs and artifacts.
-- Add better dashboard health summaries.
+- Add run detail timelines. Done.
+- Add filter/search for runs and artifacts. Done.
+- Add better dashboard health summaries. Done.
+- Add API filter contracts and tests. Done.
 
 ## Day 4: File Watchers
 
